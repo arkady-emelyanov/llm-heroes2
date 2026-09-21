@@ -29,5 +29,9 @@ battle/save/
 __pycache__/
 *.pyc
 harness/journal.jsonl
-harness/battle-log.jsonl
 harness/relay/
+
+# Battle logs, wherever they are put and whatever they are named. They are recordings of a
+# particular run, reproducible by fighting the scenario again, and they grow without bound.
+battle-log*.jsonl
+*.log

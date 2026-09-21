@@ -1,0 +1,90 @@
+{
+  "_comment": "Two full armies, five stacks each, both heroes carrying a stocked spell book and the same four artifacts, so nothing about the gear favours either side. The Wizard is slow, armoured and hits like a siege engine - Titans outrange everything on the field and Steel Golems simply refuse to die. The Sorceress is faster in every slot and has to use that speed before the Titans find the range. Army strengths are within 2% by the engine's own GetMonsterStrength(); fought 40 times with both sides played by the game's AI, the split was 22-18 to the Wizard, and 18 of those 40 ended with even the winner down to two stacks or fewer. The Steel Golem count is the balance knob: 28 of them makes it the Wizard's battle, 23 makes it the Sorceress's.",
+  "terrain": "wasteland",
+  "llm": {
+    "max_tokens": 16384,
+    "assess_every": 3
+  },
+  "blue": {
+    "hero": "Kalindra",
+    "troops": [
+      {
+        "monster": "Titan",
+        "count": 3
+      },
+      {
+        "monster": "Archmage",
+        "count": 16
+      },
+      {
+        "monster": "Roc",
+        "count": 14
+      },
+      {
+        "monster": "Steel Golem",
+        "count": 26
+      },
+      {
+        "monster": "Halfling",
+        "count": 50
+      }
+    ],
+    "spells": [
+      "Lightning Bolt",
+      "Mass Curse",
+      "Slow",
+      "Steelskin",
+      "Blood Lust",
+      "Berserker",
+      "Cure"
+    ],
+    "artifacts": [
+      "Magic Book",
+      "Thunder Mace of Dominion",
+      "Stealth Shield of Protection",
+      "Arcane Necklace of Magic",
+      "Major Scroll of Knowledge"
+    ]
+  },
+  "red": {
+    "hero": "Gem",
+    "troops": [
+      {
+        "monster": "Grand Elf",
+        "count": 40
+      },
+      {
+        "monster": "Greater Druid",
+        "count": 20
+      },
+      {
+        "monster": "Unicorn",
+        "count": 12
+      },
+      {
+        "monster": "Phoenix",
+        "count": 4
+      },
+      {
+        "monster": "Battle Dwarf",
+        "count": 25
+      }
+    ],
+    "spells": [
+      "Lightning Bolt",
+      "Mass Bless",
+      "Mass Haste",
+      "Mass Shield",
+      "Blind",
+      "Disrupting Ray",
+      "Cure"
+    ],
+    "artifacts": [
+      "Magic Book",
+      "Thunder Mace of Dominion",
+      "Stealth Shield of Protection",
+      "Arcane Necklace of Magic",
+      "Major Scroll of Knowledge"
+    ]
+  }
+}
