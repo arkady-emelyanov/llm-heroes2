@@ -1,0 +1,5 @@
+# The LangGraph agent. Only needed to play with a model: `harness.py --random` runs on the
+# standard library alone, so the protocol can always be exercised without installing anything.
+langgraph>=0.2.0
+langchain-core>=0.3.0  # pulled in by langgraph
+pydantic>=2.0

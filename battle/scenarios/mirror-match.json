@@ -1,0 +1,23 @@
+{
+  "_comment": "Identical armies, so the result reflects tactics alone rather than a stronger roster. The fairest way to compare the model against the game's AI.",
+
+  "terrain": "dirt",
+
+  "blue": {
+    "hero": "Lord Kilburn",
+    "troops": [
+      { "monster": "Archer", "count": 20 },
+      { "monster": "Pikeman", "count": 30 },
+      { "monster": "Cavalry", "count": 10 }
+    ]
+  },
+
+  "red": {
+    "hero": "Sir Gallant",
+    "troops": [
+      { "monster": "Archer", "count": 20 },
+      { "monster": "Pikeman", "count": 30 },
+      { "monster": "Cavalry", "count": 10 }
+    ]
+  }
+}

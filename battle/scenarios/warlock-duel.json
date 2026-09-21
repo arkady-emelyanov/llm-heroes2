@@ -1,0 +1,56 @@
+{
+  "_comment": "Both heroes carry a stocked spell book, so magic decides this one. Small armies keep the battle short and make each spell matter. Artifacts raise the primary skills that spell damage and survivability scale from.",
+  "terrain": "lava",
+  "llm": {
+    "max_tokens": 16384,
+    "assess_every": 4
+  },
+  "blue": {
+    "hero": "Falagar",
+    "troops": [
+      {
+        "monster": "Centaur",
+        "count": 30
+      },
+      {
+        "monster": "Gargoyle",
+        "count": 15
+      }
+    ],
+    "spells": [
+      "Lightning Bolt",
+      "Bless",
+      "Haste",
+      "Stoneskin",
+      "Curse"
+    ],
+    "artifacts": [
+      "Magic Book",
+      "Thunder Mace of Dominion"
+    ]
+  },
+  "red": {
+    "hero": "Ariel",
+    "troops": [
+      {
+        "monster": "Elf",
+        "count": 30
+      },
+      {
+        "monster": "Dwarf",
+        "count": 15
+      }
+    ],
+    "spells": [
+      "Magic Arrow",
+      "Bless",
+      "Slow",
+      "Shield",
+      "Cure"
+    ],
+    "artifacts": [
+      "Minor Scroll of Knowledge",
+      "Stealth Shield of Protection"
+    ]
+  }
+}

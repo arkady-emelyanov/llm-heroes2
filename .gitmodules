@@ -1,0 +1,3 @@
+[submodule "fheroes2"]
+	path = fheroes2
+	url = https://github.com/ihhub/fheroes2.git

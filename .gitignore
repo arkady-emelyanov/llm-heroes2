@@ -1,0 +1,33 @@
+# Build output
+battle/build/
+battle/fheroes2-battle
+battle/fheroes2-relay
+battle/build.log
+homm2_manual.zip
+
+# Game assets extracted from the original installer by setup.sh. These are copyrighted game data,
+# not ours to redistribute, and are reproducible from your own copy of the game.
+battle/anim/
+battle/data/
+battle/maps/
+battle/music/
+battle/files/
+
+# Runtime state written next to the binary
+battle/fheroes2.cfg
+battle/fheroes2.key
+battle/save/
+
+# The original game installer
+*.exe
+
+# Editor and tooling
+.vscode/
+.omc/
+
+# Python
+__pycache__/
+*.pyc
+harness/journal.jsonl
+harness/battle-log.jsonl
+harness/relay/

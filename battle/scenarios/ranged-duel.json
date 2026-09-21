@@ -1,0 +1,21 @@
+{
+  "_comment": "Both sides hold archers. Tests whether the model protects its shooters instead of walking them into melee, and whether it closes on the enemy's.",
+
+  "terrain": "grass",
+
+  "blue": {
+    "hero": "Lord Kilburn",
+    "troops": [
+      { "monster": "Archer", "count": 25 },
+      { "monster": "Swordsman", "count": 15 }
+    ]
+  },
+
+  "red": {
+    "hero": "Ariel",
+    "troops": [
+      { "monster": "Elf", "count": 25 },
+      { "monster": "Dwarf", "count": 15 }
+    ]
+  }
+}

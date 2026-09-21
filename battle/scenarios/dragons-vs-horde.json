@@ -1,0 +1,22 @@
+{
+  "_comment": "Few strong versus many weak. The horde wins only by focusing fire and accepting losses; the dragons win by killing whole stacks before they retaliate.",
+
+  "terrain": "lava",
+
+  "blue": {
+    "hero": "Thundax",
+    "troops": [
+      { "monster": "Goblin", "count": 150 },
+      { "monster": "Orc", "count": 60 },
+      { "monster": "Wolf", "count": 30 }
+    ]
+  },
+
+  "red": {
+    "hero": "Falagar",
+    "troops": [
+      { "monster": "Green Dragon", "count": 4 },
+      { "monster": "Gargoyle", "count": 20 }
+    ]
+  }
+}

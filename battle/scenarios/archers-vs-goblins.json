@@ -1,0 +1,34 @@
+{
+  "_comment": "A small, decisive battle: ranged Knight army against a Barbarian melee rush. Blue attacks, red defends. Names match what the game calls them; matching ignores case, spaces, underscores and dashes.",
+  "terrain": "grass",
+  "llm": {
+    "max_tokens": 12288,
+    "assess_every": 4
+  },
+  "blue": {
+    "hero": "Lord Kilburn",
+    "troops": [
+      {
+        "monster": "Archer",
+        "count": 20
+      },
+      {
+        "monster": "Pikeman",
+        "count": 30
+      }
+    ]
+  },
+  "red": {
+    "hero": "Thundax",
+    "troops": [
+      {
+        "monster": "Goblin",
+        "count": 60
+      },
+      {
+        "monster": "Orc",
+        "count": 15
+      }
+    ]
+  }
+}
