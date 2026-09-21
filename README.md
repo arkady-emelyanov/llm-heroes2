@@ -8,6 +8,11 @@ harness that translates the battlefield into a prompt, asks a model for a move, 
 answer back into engine commands. You can watch it play, play against it yourself, or have a coding
 agent play a side through two files.
 
+![A battle in progress: Titans and Archmages against Grand Elves and a Phoenix, on wasteland](docs/battle.png)
+
+*The `titans-vs-phoenix` scenario, mid-exchange. Five stacks a side, both heroes with a stocked
+spell book and identical artifacts. Run it with `make demo SCENARIO=battle/scenarios/titans-vs-phoenix.json`.*
+
 Nothing here modifies the fheroes2 sources. The engine is a pinned git submodule; the four files
 that needed changing are vendored under `battle/vendor/` with every deviation marked `LOCAL CHANGE`.
 
