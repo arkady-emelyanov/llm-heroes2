@@ -27,6 +27,11 @@ Put that `.exe` in the root of this repository. You do **not** need Windows or W
 is unpacked, never run. `setup.sh` finds any file matching `setup_heroes_of_might_and_magic_2*.exe`
 in the repo root on its own; anything else, pass the path as an argument.
 
+**Optional: the bonus soundtrack.** The same GOG page offers the remastered OST as a separate
+download (*Heroes of Might and Magic II Soundtrack*, FLAC). Drop that `.zip` in the repo root too
+and `setup.sh` installs it — see [Music](#music). Without it you still get the game's own music,
+which ships inside the installer.
+
 **A Linux machine** with a display if you want to watch battles (headless works without one).
 
 **System packages.** On Debian/Ubuntu:
@@ -58,12 +63,12 @@ cd llm-heroes2
 
 `./setup.sh` (or `make setup`) does the whole bootstrap: checks dependencies, checks out the pinned
 fheroes2 submodule, builds `battle/fheroes2-battle` out of tree, compiles the translations, unpacks
-the installer, converts GOG's raw-sector `homm2.gog` CD image to a plain ISO, and copies every asset
-into `battle/` next to the binary. Expect a few minutes, mostly compiling.
+the installer, converts GOG's raw-sector `homm2.gog` CD image to a plain ISO, copies every asset
+into `battle/` next to the binary, and installs the bonus soundtrack if it finds one. Expect a few minutes, mostly compiling.
 
 If you cloned without `--recurse-submodules`, `setup.sh` initialises the submodule itself.
 
-Useful flags when re-running: `--no-clone`, `--no-build`, `--no-assets`.
+Useful flags when re-running: `--no-clone`, `--no-build`, `--no-assets`, `--no-ost`.
 
 **Check it worked** — a full battle, headless, no display and no model:
 
@@ -199,6 +204,37 @@ are directly comparable. `RELAY_DIR=<dir>` puts the files elsewhere.
 
 ---
 
+## Music
+
+Battles have music, and it works out of the box: the game's own soundtrack ships inside the GOG
+installer as `MUSIC/homm2_NN.ogg`, and `setup.sh` copies it to `battle/music/`, which is exactly
+where and how fheroes2 looks for external music. External music is the engine's default and the
+default volume is 6/10, so there is nothing to configure.
+
+**The remastered soundtrack.** If an archive matching `*ost*.zip` is in the repo root, `setup.sh`
+installs its tracks in place of the installer's:
+
+```bash
+./setup.sh                       # picks up any *ost*.zip automatically
+./setup.sh --ost /path/to.zip    # or name it
+./setup.sh --no-ost              # keep the game's own music
+```
+
+Two things have to happen for those files to be heard, and `setup.sh` does both. GOG names them
+`... OST - 07 - Town - Necromancer.flac`, numbered from the CD's audio tracks; the engine wants
+`homm2_NN.<ext>` numbered from the CD's *data* track, so every track is renumbered one lower. And
+the engine tries `.ogg` before `.mp3` before `.flac`, so the installer's `.ogg` of the same track is
+removed — otherwise it would win and the bonus tracks would never play.
+
+Battles use three tracks, picked at random and looped: `homm2_01`, `homm2_02`, `homm2_03`
+(`BATTLE1`–`BATTLE3`). Victory and defeat are `homm2_28` and `homm2_29`.
+
+Music is played by the battle interface, so a battle fought with `--headless` is silent by design.
+`make demo` on a machine with no display sets SDL's dummy audio and video drivers and is likewise
+silent; run it with a display to hear anything.
+
+---
+
 ## Read the battle back
 
 Every choice both sides make is recorded by the engine itself — not by either player — one JSON
@@ -232,6 +268,7 @@ battle/
   src/                the battle-only binary: entry point, scenarios, protocol
   vendor/             the four engine files we had to change, marked LOCAL CHANGE
   scenarios/*.json    predefined battles
+  music/              soundtrack, as homm2_NN.ogg/.flac (gitignored, from setup.sh)
   PROTOCOL.md         the wire protocol, scenario format, and battle log
 harness/
   harness.py          the server; --random, --relay, --demo
@@ -262,6 +299,12 @@ harness first, and check both are using the same `HARNESS_PORT` (default 9000).
 
 **A long battle is interrupted by the screensaver.** `./idle.sh off` disables the screensaver and
 idle suspend, saving your current settings; `./idle.sh on` puts them back exactly as they were.
+
+**No music.** Check `battle/music/` is populated and that the files are named `homm2_NN.ogg`
+(or `.mp3`/`.flac`) — any other naming is ignored. If you installed the bonus OST by hand, remember
+the engine prefers `.ogg` over `.flac`, so a leftover `.ogg` of the same number wins; and FLAC needs
+an SDL2_mixer built with FLAC support, which `libsdl2-mixer-dev` provides on Debian/Ubuntu. A
+`--headless` battle is silent by design.
 
 **Port already in use.** A previous harness is still running. Find it with
 `ps -o pid,cmd -C python3 | grep harness.py` and `kill` that PID — do not `pkill -f harness`, which

@@ -22,7 +22,9 @@ readonly BUILD_DIR="${BATTLE_DIR}/build"
 do_clone=1
 do_build=1
 do_assets=1
+do_ost=1
 installer=""
+ost_archive=""
 
 function echo_stage {
     echo
@@ -46,11 +48,18 @@ Options:
   --no-clone    Do not check out the fheroes2 submodule
   --no-build    Do not build the battle-only binary
   --no-assets   Do not extract the game assets
+  --no-ost      Do not install the bonus soundtrack, even if one is found
+  --ost FILE    Use this soundtrack archive instead of looking for one
   -h, --help    Show this help
 
 The installer is the original HoMM2 setup executable (GOG or similar). If it is
 not given, the script looks for setup_heroes_of_might_and_magic_2*.exe in
 ${ROOT_DIR}.
+
+The game's own music comes out of that installer. GOG also offers the remastered
+soundtrack as a separate bonus download; if an archive matching *ost*.zip is
+found alongside it, those tracks are installed instead, being the same music at
+a much higher bitrate.
 EOF
 }
 
@@ -59,6 +68,12 @@ while [[ "$#" -gt 0 ]]; do
     --no-clone) do_clone=0 ;;
     --no-build) do_build=0 ;;
     --no-assets) do_assets=0 ;;
+    --no-ost) do_ost=0 ;;
+    --ost)
+        shift
+        [[ "$#" -gt 0 ]] || die "'--ost' needs a path to the soundtrack archive."
+        ost_archive="$1"
+        ;;
     -h | --help)
         usage
         exit 0
@@ -234,6 +249,91 @@ with open(raw_path, "rb") as raw_file, open(iso_path, "wb") as iso_file:
 EOF
 
     bsdtar -x -f "${iso_file}" -C "${BATTLE_DIR}/anim" --include "HEROES2/ANIM/*" --strip-components=2
+fi
+
+#
+# Bonus soundtrack
+#
+# fheroes2 looks for external music as <root>/music/homm2_NN.<ext>, where NN is the engine's own
+# track id minus one, and it tries .ogg before .mp3 before .flac. GOG's bonus soundtrack is the same
+# music at a far higher bitrate but is named "... OST - NN - Title.flac", one higher than the engine
+# wants, so it has to be both renamed and renumbered - and the installer's .ogg of the same track
+# has to go, or it would win on extension order and the bonus tracks would never be heard.
+#
+if [[ "${do_ost}" == "1" ]]; then
+    if [[ -z "${ost_archive}" ]]; then
+        shopt -s nullglob
+        ost_candidates=("${ROOT_DIR}"/*[Oo][Ss][Tt]*.zip)
+        shopt -u nullglob
+
+        [[ "${#ost_candidates[@]}" -eq 1 ]] && ost_archive="${ost_candidates[0]}"
+
+        if [[ "${#ost_candidates[@]}" -gt 1 ]]; then
+            echo_warn "Several soundtrack archives found; pass the one to use with --ost. Using the game's own music."
+        fi
+    fi
+
+    if [[ -n "${ost_archive}" ]]; then
+        if [[ ! -f "${ost_archive}" ]]; then
+            die "soundtrack archive '${ost_archive}' does not exist."
+        fi
+
+        echo_stage "Installing the bonus soundtrack"
+        echo "Archive: ${ost_archive}"
+
+        python3 - "${ost_archive}" "${BATTLE_DIR}/music" <<'EOF'
+import os
+import re
+import sys
+import zipfile
+
+archive_path, music_dir = sys.argv[1], sys.argv[2]
+
+# "Heroes of Might and Magic II OST - 07 - Town - Necromancer.flac" -> track 7. The number wanted is
+# the one right after "OST -"; later digits belong to the title, so the pattern is anchored on it.
+track_pattern = re.compile(r"OST\s*-\s*(\d+)\s*-\s*.*?\.(flac|mp3|ogg)$", re.IGNORECASE)
+
+installed = 0
+superseded = 0
+
+with zipfile.ZipFile(archive_path) as archive:
+    for entry in archive.infolist():
+        if entry.is_dir():
+            continue
+
+        match = track_pattern.search(os.path.basename(entry.filename))
+        if match is None:
+            continue
+
+        # The engine numbers from the CD's data track, which the soundtrack does not include, so
+        # every bonus track sits exactly one ahead of the name the engine will ask for.
+        number = int(match.group(1)) - 1
+        extension = match.group(2).lower()
+
+        target = os.path.join(music_dir, f"homm2_{number:02d}.{extension}")
+
+        with archive.open(entry) as source, open(target, "wb") as destination:
+            while chunk := source.read(1 << 20):
+                destination.write(chunk)
+
+        installed += 1
+
+        # Extension order means a leftover .ogg of the same track would be chosen over this one.
+        for beaten in ("ogg", "mp3"):
+            if beaten == extension:
+                continue
+
+            stale = os.path.join(music_dir, f"homm2_{number:02d}.{beaten}")
+            if os.path.exists(stale):
+                os.remove(stale)
+                superseded += 1
+
+print(f"Installed {installed} soundtrack tracks, replacing {superseded} of the game's own.")
+EOF
+    else
+        echo
+        echo "No bonus soundtrack archive found; using the game's own music."
+    fi
 fi
 
 echo_stage "Copying fheroes2 resources"

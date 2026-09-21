@@ -3,7 +3,7 @@ battle/build/
 battle/fheroes2-battle
 battle/fheroes2-relay
 battle/build.log
-homm2_manual.zip
+*.zip
 
 # Game assets extracted from the original installer by setup.sh. These are copyrighted game data,
 # not ours to redistribute, and are reproducible from your own copy of the game.
@@ -18,8 +18,10 @@ battle/fheroes2.cfg
 battle/fheroes2.key
 battle/save/
 
-# The original game installer
+# The original game installer, and the bonus soundtrack archive. Both are yours, large, and
+# reproducible from your own GOG library.
 *.exe
+*ost*.zip
 
 # Editor and tooling
 .vscode/
