@@ -15,6 +15,7 @@
 #include <cstring>
 #include <map>
 #include <memory>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -663,11 +664,14 @@ namespace
         }
         writer.endArray();
 
-        // Which of those cells leave the stack out of reach of every enemy. Working this out needs
+        // Which of those cells have no enemy standing beside them right now. Working this out needs
         // the board's parity-dependent neighbours, and a player asked to derive them from a list of
         // cell names will do it by hand, one cell at a time, for as many cells as it was offered -
         // observed eating a whole turn's thinking on a 64-cell move list. The engine already knows,
         // so it says so.
+        //
+        // This is about this instant only. Whether the cell is still clear when the stack acts again
+        // is a different question, answered by "move_out_of_enemy_reach" below.
         writer.startArray( "move_breaks_contact" );
         for ( const int32_t cell : moveCells ) {
             const Battle::Position position = Battle::Position::GetPosition( currentUnit, cell );
@@ -689,6 +693,71 @@ namespace
 
             if ( !adjacentToEnemy ) {
                 writer.value( static_cast<int64_t>( cell ) );
+            }
+        }
+        writer.endArray();
+
+        // Which of those cells no enemy can get beside on its own next turn.
+        //
+        // "Breaks contact" above is only ever about this instant, and a player told nothing else
+        // reads it as safety: it says nothing about the flier four cells away that will simply
+        // follow. Observed costing a stack of Elves three rounds and two thirds of its number - it
+        // stepped away from Gargoyles onto a cell reported as clear, was caught there before it
+        // acted again, and so never shot at all. A shooter that walks has given up its round, so a
+        // promise of safety that does not hold is worse than no promise.
+        //
+        // So every enemy's own movement is asked of the engine rather than guessed at. The speed
+        // used is the one an enemy will have when it next acts: GetSpeed() reports STANDING for a
+        // stack that has already moved this round, and reading that as "cannot reach you" would be
+        // the same mistake in a new place. Blinded and paralysed stacks do report STANDING here,
+        // and threaten only what is already beside them.
+        writer.startArray( "move_out_of_enemy_reach" );
+        {
+            std::set<int32_t> threatened;
+
+            for ( const Battle::Unit * enemy : arena.getEnemyForce( currentUnit.GetCurrentColor() ) ) {
+                if ( enemy == nullptr || !enemy->isValid() ) {
+                    continue;
+                }
+
+                // Where it stands now: a stack need not move to strike what is already beside it.
+                for ( const int32_t around : Battle::Board::GetAroundIndexes( enemy->GetPosition() ) ) {
+                    threatened.insert( around );
+                }
+
+                const uint32_t speed = enemy->GetSpeed( false, true );
+
+                for ( int32_t cell = 0; cell < static_cast<int32_t>( Battle::Board::sizeInCells ); ++cell ) {
+                    // Asked with an explicit speed, this ignores whose turn it is and answers for
+                    // the enemy's own movement. A two-cell unit may take a cell as its tail, so the
+                    // same head test the move list uses applies here too.
+                    const Battle::Position position = Battle::Position::GetReachable( *enemy, cell, speed );
+
+                    if ( position.GetHead() == nullptr || position.GetHead()->GetIndex() != cell ) {
+                        continue;
+                    }
+
+                    for ( const int32_t around : Battle::Board::GetAroundIndexes( position ) ) {
+                        threatened.insert( around );
+                    }
+                }
+            }
+
+            for ( const int32_t cell : moveCells ) {
+                const Battle::Position position = Battle::Position::GetPosition( currentUnit, cell );
+
+                if ( position.GetHead() == nullptr ) {
+                    continue;
+                }
+
+                // Every cell the stack would occupy has to be clear, not just the one it is named
+                // after: a wide stack is reachable by anything that can get beside its tail.
+                const bool reachableByEnemy = threatened.count( position.GetHead()->GetIndex() ) > 0
+                                              || ( position.GetTail() != nullptr && threatened.count( position.GetTail()->GetIndex() ) > 0 );
+
+                if ( !reachableByEnemy ) {
+                    writer.value( static_cast<int64_t>( cell ) );
+                }
             }
         }
         writer.endArray();

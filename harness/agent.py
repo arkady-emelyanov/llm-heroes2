@@ -407,25 +407,43 @@ def enumerate_unit_actions(turn: dict) -> list[tuple[str, dict]]:
     # 'is_archer' lives on the army entry rather than the acting-stack summary.
     forfeits_shot = acting.get("is_archer") and turn["unit"].get("shots", 0) > 0 and any(target["ranged"] for target in legal["attack"])
 
-    # The engine says which cells leave the stack out of reach of every enemy; without that the
-    # model derives hex adjacency by hand, cell by cell, across the whole move list.
+    # The engine says which cells have no enemy beside them, and which of those no enemy can reach
+    # before the stack acts again; without that the model derives hex adjacency by hand, cell by
+    # cell, across the whole move list.
     #
-    # An older game does not send it at all, and that is not the same as sending an empty list - one
-    # means "unknown", the other "none of them". Labelling every cell "still within reach" on the
-    # strength of a missing key would state as fact something nobody checked.
+    # An older game does not send them at all, and that is not the same as sending an empty list -
+    # one means "unknown", the other "none of them". Labelling every cell "still within reach" on
+    # the strength of a missing key would state as fact something nobody checked.
     safe_cells = legal.get("move_breaks_contact")
     breaks_contact = set(safe_cells) if safe_cells is not None else None
+
+    unreachable_cells = legal.get("move_out_of_enemy_reach")
+    out_of_reach = set(unreachable_cells) if unreachable_cells is not None else None
+
     in_contact = bool(legal["attack"]) and not any(target["ranged"] for target in legal["attack"])
+    fleeing_archer = in_contact and acting.get("is_archer")
 
     for cell in legal["move"]:
         if forfeits_shot:
             cost = " - GIVES UP THIS ROUND'S SHOT, does no damage"
         elif breaks_contact is None:
             cost = ""
-        elif cell in breaks_contact:
+        elif out_of_reach is not None and cell in out_of_reach:
             # Only worth pointing out when there is contact to break. Said on every move of a stack
             # nobody is near, "out of reach of every enemy" reads as a recommendation to run away.
-            cost = " - out of reach of every enemy" + (", so you can shoot again next round" if in_contact and acting.get("is_archer") else "")
+            cost = " - out of reach of every enemy" + (", so you can shoot again next round" if fleeing_archer else "")
+        elif cell in breaks_contact:
+            # Nothing is beside this cell now, but something can be there before the stack acts
+            # again - which for a shooter is the whole question, since a stack that walks has
+            # already given up its shot. Told only that the cell "breaks contact", a shooter reads
+            # safety into it, walks, is caught anyway and fires nothing: the promise has to say
+            # which of the two things it means.
+            if out_of_reach is None:
+                cost = " - nothing is beside it now"
+            elif fleeing_archer:
+                cost = " - nothing is beside it now, but an enemy can reach you there before you act again, so you would walk for nothing"
+            else:
+                cost = " - nothing is beside it now, but an enemy can reach you there before you act again"
         elif in_contact:
             cost = " - still within reach of an enemy"
         else:

@@ -49,6 +49,8 @@ The game sends the full state every turn — there are no diffs to track:
   "defender_commander": { ... },
   "legal_actions": {
     "move": [12, 13, 14],
+    "move_breaks_contact": [13, 14],
+    "move_out_of_enemy_reach": [14],
     "attack": [{"target": 3, "name": "Peasant", "ranged": true}],
     "cast": [
       {"spell": 15, "name": "Bless", "cost": 3,
@@ -78,6 +80,25 @@ Each entry of an army array describes one stack:
 `legal_actions` is computed by the engine, so the harness picks from a list rather than
 reimplementing the rules. Cells in `move` are reachable this turn; units in `attack` can be hit this
 turn, in melee or at range.
+
+Two subsets of `move` answer the question a stack actually asks before walking away from a fight.
+Both are computed with the board's parity-dependent neighbours, which a harness would otherwise
+derive by hand for every cell it was offered:
+
+| Field | Meaning |
+|---|---|
+| `move_breaks_contact` | cells with no enemy standing beside them **right now** |
+| `move_out_of_enemy_reach` | of those, the cells no enemy can get beside before this stack acts again |
+
+The second is always a subset of the first, and the difference between them matters: a cell that
+merely breaks contact says nothing about the flier four cells away that will simply follow. A
+shooter that walks has already given up its shot, so telling it "out of reach" on the strength of
+the first list alone promises a safety that does not hold — and against a flying enemy, which can
+land anywhere it fits, `move_out_of_enemy_reach` is correctly empty.
+
+Enemy reach is worked out from the speed each enemy will have when it next acts, so a stack that has
+already moved this round still counts as the threat it is. Blinded and paralysed stacks threaten
+only what is already beside them.
 
 A commander's `spells` is everything in the hero's book, with the spell points each costs. It is
 informational: what can actually be cast this turn is `legal_actions.cast` below, which is narrower.
