@@ -339,6 +339,11 @@ def main() -> int:
     agent_factory = None
     context_window = args.context_window
 
+    # Only the LangGraph agent keeps one. --random and --relay leave it None, and the summary at the
+    # end has to ask rather than assume: reading it unconditionally crashed every relayed battle on
+    # exit, after the result had already been printed.
+    journal = None
+
     if args.relay and args.random:
         parser.error("--relay and --random both answer the turns; pick one.")
 
@@ -443,7 +448,7 @@ def main() -> int:
                 if demo is not None:
                     demo.wait()
 
-                    if not args.random:
+                    if journal is not None:
                         print(f"\n{BOLD}Journal:{RESET} {journal.summary()}", file=sys.stderr)
 
                     return demo.returncode
